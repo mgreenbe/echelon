@@ -1,0 +1,97 @@
+.App {
+  margin: 50px;
+  width: 400px;
+}
+
+textarea {
+  font-family: monospace;
+  width: 100%;
+  height: 5em;
+  font-size: 120%;
+  padding: 5px;
+}
+
+.button-bar {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  align-content: stretch;
+}
+
+button {
+  flex-grow: 1;
+  padding: 5px;
+}
+
+.flag {
+  margin-left: 5px;
+  margin-right: 5px;
+  padding: 5px;
+  border-radius: 3px;
+  transition: background-color 0.5s;
+}
+
+.flag-panel {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+}
+
+.matrix-panel {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: stretch;
+}
+
+.button-bar-column {
+  display: flex;
+  flex-direction: column;
+  align-content: stretch;
+}
+
+.input-bar {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly;
+}
+
+input {
+  font-family: monospace;
+  font-size: 120%;
+  padding: 5px;
+}
+
+select {
+  font-family: monospace;
+  font-size: 120%;
+  padding: 5px;
+}
+
+option {
+  font-family: monospace;
+}
+
+section {
+  margin: 20px;
+}
+
+.bracket {
+  width: 4px;
+  border-top: 2px solid;
+  border-bottom: 2px solid;
+}
+
+.left-bracket {
+  border-left: 2px solid;
+}
+
+.right-bracket {
+  border-right: 2px solid;
+}
+
+td {
+  font-family: monospace;
+  font-size: 120%;
+  padding: 5px;
+}
