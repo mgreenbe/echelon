@@ -3,7 +3,17 @@ import Fraction from "fraction.js";
 import parse from "./parse.js";
 import { applyRowOp } from "./rowops.js";
 import nextRowOp from "./echelon.js";
+import TeX from "./tex.js";
+import "bootstrap/dist/css/bootstrap.min.css";
 import "./App.css";
+
+const toLatex = mat => {
+  const inside = mat
+    .map(row => row.map(x => x.toLatex()).join("&"))
+    .join("\\\\[1ex]");
+  console.log(inside);
+  return `\\displaystyle{\\begin{pmatrix}${inside}\\end{pmatrix}}`;
+};
 
 const printh = h => {
   let hh;
@@ -48,11 +58,11 @@ class App extends Component {
         this.modifyMatrix(applyRowOp(mat, [name, ensureFraction(h), i, j]));
         break;
       case "hint":
-        const [type, hh, ii, jj] = op;
+        const [, hh, ii, jj] = op;
         this.setState({ h: hh.toFraction(), i: ii, j: jj, hint: true });
         break;
       default:
-        console.err("Unknown action!");
+        console.error(`Unknown action: ${name}`);
     }
   };
 
@@ -62,27 +72,53 @@ class App extends Component {
 
   render() {
     const { matStr, h, i, j, mat, inREF, inRREF, hint, op } = this.state;
+    console.log(printh(h));
     return (
       <div className="App">
         <section>
           <div>Enter matrix:</div>
           <textarea
             name="matStr"
+            className="form-control"
+            style={{
+              fontSize: "125%",
+              borderBottomLeftRadius: 0,
+              borderBottomRightRadius: 0,
+              border: "1px solid darkgray"
+            }}
             value={matStr || ""}
             onChange={this.handleInput}
           />
           <div className="button-bar">
-            <button name="create" onClick={this.handleClick}>
+            <button
+              name="create"
+              className="btn"
+              style={{
+                borderTopLeftRadius: 0,
+                borderTopRightRadius: 0,
+                borderBottomRightRadius: 0,
+                borderLeft: "1px solid darkgray",
+                borderBottom: "1px solid darkgray",
+                borderRight: "1px solid darkgray"
+              }}
+              onClick={this.handleClick}
+            >
               Create
             </button>
-            <button name="clear" onClick={this.handleClick}>
+            <button
+              name="clear"
+              className="btn"
+              style={{
+                borderTopLeftRadius: 0,
+                borderTopRightRadius: 0,
+                borderBottomLeftRadius: 0,
+                borderBottom: "1px solid darkgray",
+                borderRight: "1px solid darkgray"
+              }}
+              onClick={this.handleClick}
+            >
               Clear
             </button>
-          </div>
-          <div>
-            {"Separate entries with spaces."}
-            <br />
-            {"One row per line."}
           </div>
         </section>
         {mat && (
@@ -109,46 +145,50 @@ class App extends Component {
                 </span>
               </div>
               <div className="matrix-panel">
-                <span className="bracket left-bracket" />
-                <table>
-                  <tbody>
-                    {mat.map((row, i) => (
-                      <tr key={i}>
-                        {row.map((x, j) => <td key={j}>{x.toFraction()}</td>)}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-                <span className="bracket right-bracket" />
+                <TeX>{toLatex(mat)}</TeX>{" "}
               </div>
             </section>
             <section className="input-bar">
-              <label>
-                {"h = "}
+              <div
+                className="input-group"
+                style={{
+                  display: "flex",
+                  flexDirection: "row",
+                  alignItems: "stretch"
+                }}
+              >
+                <TeX className="label">{"h =\\,\\,"}</TeX>
                 <input
                   name="h"
+                  className="form-control"
                   value={h || ""}
                   onChange={this.handleInput}
                   style={{
-                    width: "60px",
-                    transition: "background-color 0.5s",
+                    width: "80px",
+                    transition: "color 0.5s, background-color 0.5s",
+                    color:
+                      hint && (op[0] === "scale" || op[0] === "transvect")
+                        ? "white"
+                        : undefined,
                     backgroundColor:
                       hint && (op[0] === "scale" || op[0] === "transvect")
-                        ? "lightpink"
+                        ? "palevioletred"
                         : "transparent"
                   }}
                 />
-              </label>
-              <label>
-                {"i = "}
+              </div>
+              <div className="input-group">
+                <TeX className="label">{"i =\\,\\,"}</TeX>
                 <select
                   name="i"
+                  className="form-control"
                   value={i}
                   onChange={this.handleInput}
                   style={{
+                    display: "inline",
                     width: "60px",
                     transition: "background-color 0.5s",
-                    backgroundColor: hint ? "lightpink" : "transparent"
+                    backgroundColor: hint ? "palevioletred" : "transparent"
                   }}
                 >
                   {["", ...mat].map((_, k) => (
@@ -157,19 +197,21 @@ class App extends Component {
                     </option>
                   ))}
                 </select>
-              </label>
-              <label>
-                {"j = "}
+              </div>
+              <div className="input-group">
+                <TeX className="label">{"j =\\,\\,"}</TeX>
                 <select
                   name="j"
+                  className="form-control"
                   value={j}
                   onChange={this.handleInput}
                   style={{
+                    display: "inline",
                     width: "60px",
                     transition: "background-color 0.5s",
                     backgroundColor:
                       hint && (op[0] === "swap" || op[0] === "transvect")
-                        ? "lightpink"
+                        ? "palevioletred"
                         : "transparent"
                   }}
                 >
@@ -179,59 +221,80 @@ class App extends Component {
                     </option>
                   ))}
                 </select>
-              </label>
+              </div>
             </section>
             <section className="button-bar-column">
               <button
                 name="swap"
+                className="btn"
                 disabled={!mat || Number(i) === -1 || Number(j) === -1}
                 onClick={this.handleClick}
                 style={{
-                  transition: "background-color 0.5s",
+                  borderBottomLeftRadius: 0,
+                  borderBottomRightRadius: 0,
+                  border: "1px solid darkgray",
                   backgroundColor:
-                    hint && op[0] === "swap" ? "lightpink" : undefined
+                    hint && op[0] === "swap" ? "palevioletred" : undefined
                 }}
               >
-                {`Swap rows ${Number(i) === -1
-                  ? "i"
-                  : Number(i) + 1} and ${Number(j) === -1
-                  ? "j"
-                  : Number(j) + 1}.`}
+                {`Swap rows `}
+                <TeX>{Number(i) === -1 ? "i" : String(Number(i) + 1)}</TeX>
+                {` and `}
+                <TeX>{Number(j) === -1 ? "j" : String(Number(j) + 1)}</TeX>
+                {`.`}
               </button>
               <button
                 name="scale"
+                className="btn"
                 disabled={!mat || !h || Number(i) === -1}
                 onClick={this.handleClick}
                 style={{
+                  borderRadius: 0,
+                  borderLeft: "1px solid darkgray",
+                  borderRight: "1px solid darkgray",
+                  borderBottom: "1px solid darkgray",
                   transition: "background-color 0.5s",
                   backgroundColor:
-                    hint && op[0] === "scale" ? "lightpink" : undefined
+                    hint && op[0] === "scale" ? "palevioletred" : undefined
                 }}
               >
-                {`Multiply row ${Number(i) === -1
-                  ? "i"
-                  : Number(i) + 1} by ${printh(h)}.`}
+                {`Multiply row `}
+                <TeX>{Number(i) === -1 ? "i" : String(Number(i) + 1)}</TeX>
+                {` by `} <TeX>{printh(h)}</TeX>
+                {`.`}
               </button>
               <button
                 name="transvect"
+                className="btn"
                 disabled={!mat || !h || Number(i) === -1 || Number(j) === -1}
                 onClick={this.handleClick}
                 style={{
+                  borderRadius: 0,
+                  borderLeft: "1px solid darkgray",
+                  borderRight: "1px solid darkgray",
                   transition: "background-color 0.5s",
                   backgroundColor:
-                    hint && op[0] === "transvect" ? "lightpink" : undefined
+                    hint && op[0] === "transvect" ? "palevioletred" : undefined
                 }}
               >
-                {`Add ${printh(h)} times row ${Number(i) === -1
-                  ? "i"
-                  : Number(i) + 1} to row ${Number(j) === -1
-                  ? "j"
-                  : Number(j) + 1}.`}
+                {`Add `}
+                <TeX>{printh(h)}</TeX>
+                {` times row `}
+                <TeX>{Number(i) === -1 ? "i" : String(Number(i) + 1)}</TeX>
+                {` to row `}
+                <TeX>{Number(j) === -1 ? "j" : String(Number(j) + 1)}</TeX>
+                {`.`}
               </button>
               <button
                 name="hint"
+                className="btn"
                 disabled={!mat || inRREF}
                 onClick={this.handleClick}
+                style={{
+                  border: "1px solid darkgray",
+                  borderTopLeftRadius: 0,
+                  borderTopRightRadius: 0
+                }}
               >
                 Hint
               </button>
