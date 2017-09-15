@@ -5,7 +5,6 @@ function toFraction(x) {
 }
 function parse(str) {
   const mat = str.split("\n").map(line => line.split(" ").map(toFraction));
-  console.log(mat);
   return mat;
 }
 

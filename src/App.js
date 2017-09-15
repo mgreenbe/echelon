@@ -11,26 +11,7 @@ const toLatex = mat => {
   const inside = mat
     .map(row => row.map(x => x.toLatex()).join("&"))
     .join("\\\\[1ex]");
-  console.log(inside);
   return `\\displaystyle{\\begin{pmatrix}${inside}\\end{pmatrix}}`;
-};
-
-const printh = h => {
-  let hh;
-  if (h instanceof Fraction) {
-    return h.toFraction();
-  } else {
-    try {
-      hh = new Fraction(h);
-    } catch (e) {
-      console.error(e);
-      return "h";
-    }
-    return hh.toFraction();
-  }
-};
-const ensureFraction = x => {
-  return x instanceof Fraction ? x : new Fraction(x);
 };
 
 class App extends Component {
@@ -40,11 +21,27 @@ class App extends Component {
   }
 
   handleInput = ({ target: { name, value } }) => {
-    this.setState({ [name]: value, hint: false });
+    const newState = { [name]: value, hint: false };
+    if (name === "h") {
+      let hFraction;
+      try {
+        hFraction = Fraction(value);
+        Object.assign(newState, { hFraction });
+        console.log(`h=${hFraction.toFraction()} parsed to fraction.`);
+      } catch (e) {
+        console.warn(`Couldn't parse h=${value} to fraction.`);
+      }
+    }
+    this.setState(newState);
   };
 
-  handleClick = ({ target: { name } }) => {
-    const { matStr, mat, h, i, j, op } = this.state;
+  handleClick = e => {
+    const { name } = e.target;
+    if (!name) {
+      console.log(`Clicked: ${e.target.name}`);
+      console.log(e.target);
+    }
+    const { matStr, mat, i, j, op } = this.state;
     switch (name) {
       case "clear":
         this.setState({ matStr: "" });
@@ -55,11 +52,16 @@ class App extends Component {
       case "swap":
       case "scale":
       case "transvect":
-        this.modifyMatrix(applyRowOp(mat, [name, ensureFraction(h), i, j]));
+        this.modifyMatrix(applyRowOp(mat, [name, this.state.hFraction, i, j]));
         break;
       case "hint":
-        const [, hh, ii, jj] = op;
-        this.setState({ h: hh.toFraction(), i: ii, j: jj, hint: true });
+        const [type, hFraction, ii, jj] = op;
+        const newState = { i: ii, j: jj, hint: true };
+        if (type === "scale" || type === "transvect") {
+          console.assert(hFraction instanceof Fraction);
+          Object.assign(newState, { h: hFraction.toFraction(), hFraction });
+        }
+        this.setState(newState);
         break;
       default:
         console.error(`Unknown action: ${name}`);
@@ -71,8 +73,19 @@ class App extends Component {
   };
 
   render() {
-    const { matStr, h, i, j, mat, inREF, inRREF, hint, op } = this.state;
-    console.log(printh(h));
+    const {
+      matStr,
+      h,
+      i,
+      j,
+      hFraction,
+      mat,
+      inREF,
+      inRREF,
+      hint,
+      op
+    } = this.state;
+    const hTeX = hFraction ? hFraction.toLatex() : "";
     return (
       <div className="App">
         <section>
@@ -187,7 +200,8 @@ class App extends Component {
                   style={{
                     display: "inline",
                     width: "60px",
-                    transition: "background-color 0.5s",
+                    transition: "color 0.5s, background-color 0.5s",
+                    color: hint ? "white" : undefined,
                     backgroundColor: hint ? "palevioletred" : "transparent"
                   }}
                 >
@@ -208,7 +222,11 @@ class App extends Component {
                   style={{
                     display: "inline",
                     width: "60px",
-                    transition: "background-color 0.5s",
+                    transition: "color 0.5s, background-color 0.5s",
+                    color:
+                      hint && (op[0] === "swap" || op[0] === "transvect")
+                        ? "white"
+                        : undefined,
                     backgroundColor:
                       hint && (op[0] === "swap" || op[0] === "transvect")
                         ? "palevioletred"
@@ -233,6 +251,8 @@ class App extends Component {
                   borderBottomLeftRadius: 0,
                   borderBottomRightRadius: 0,
                   border: "1px solid darkgray",
+                  transition: "color 0.5s, background-color 0.5s",
+                  color: hint && op[0] === "swap" ? "white" : undefined,
                   backgroundColor:
                     hint && op[0] === "swap" ? "palevioletred" : undefined
                 }}
@@ -253,14 +273,15 @@ class App extends Component {
                   borderLeft: "1px solid darkgray",
                   borderRight: "1px solid darkgray",
                   borderBottom: "1px solid darkgray",
-                  transition: "background-color 0.5s",
+                  transition: "color 0.5s, background-color 0.5s",
+                  color: hint && op[0] === "scale" ? "white" : undefined,
                   backgroundColor:
                     hint && op[0] === "scale" ? "palevioletred" : undefined
                 }}
               >
                 {`Multiply row `}
                 <TeX>{Number(i) === -1 ? "i" : String(Number(i) + 1)}</TeX>
-                {` by `} <TeX>{printh(h)}</TeX>
+                {` by `} <TeX>{hTeX}</TeX>
                 {`.`}
               </button>
               <button
@@ -272,13 +293,14 @@ class App extends Component {
                   borderRadius: 0,
                   borderLeft: "1px solid darkgray",
                   borderRight: "1px solid darkgray",
-                  transition: "background-color 0.5s",
+                  transition: "color 0.5s, background-color 0.5s",
+                  color: hint && op[0] === "transvect" ? "white" : undefined,
                   backgroundColor:
                     hint && op[0] === "transvect" ? "palevioletred" : undefined
                 }}
               >
                 {`Add `}
-                <TeX>{printh(h)}</TeX>
+                <TeX>{hTeX}</TeX>
                 {` times row `}
                 <TeX>{Number(i) === -1 ? "i" : String(Number(i) + 1)}</TeX>
                 {` to row `}
