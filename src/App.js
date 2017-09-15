@@ -139,7 +139,7 @@ class App extends Component {
             <section>
               <div className="flag-panel">
                 <span
-                  className="flag"
+                  className="flag rounded"
                   style={{
                     textDecoration: inREF ? undefined : "line-through",
                     backgroundColor: inREF ? "aquamarine" : undefined
@@ -148,7 +148,7 @@ class App extends Component {
                   REF
                 </span>
                 <span
-                  className="flag"
+                  className="flag rounded"
                   style={{
                     textDecoration: inRREF ? undefined : "line-through",
                     backgroundColor: inRREF ? "violet" : undefined
@@ -300,7 +300,7 @@ class App extends Component {
                 }}
               >
                 {`Add `}
-                <TeX>{hTeX}</TeX>
+                <TeX>{hTeX || "h"}</TeX>
                 {` times row `}
                 <TeX>{Number(i) === -1 ? "i" : String(Number(i) + 1)}</TeX>
                 {` to row `}
